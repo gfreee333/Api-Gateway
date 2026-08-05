@@ -6,6 +6,7 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
 
@@ -80,7 +81,7 @@ public class GatewayRoutesConfig {
      */
     @Bean
     public RedisRateLimiter redisRateLimiter(){
-        return new RedisRateLimiter(10,20,1);
+        return new RedisRateLimiter(3,5,1);
     }
 
     /**<p><b>Метод: ipKeyResolver</b></p>
@@ -88,6 +89,7 @@ public class GatewayRoutesConfig {
      * <p><b>Используется для:</b> публичных маршрутов</p>
      */
     @Bean
+    @Primary
     public KeyResolver ipKeyResolver(){
         return exchange -> {
             String ip = exchange.getRequest().getRemoteAddress() != null
