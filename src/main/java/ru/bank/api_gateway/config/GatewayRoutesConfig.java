@@ -21,7 +21,7 @@ public class GatewayRoutesConfig {
                         .path("/auth/login", "/auth/refresh/tokens")
                         .filters(f -> f.
                                 addResponseHeader(
-                                "X-Service",
+                                "Auth-Service",
                                 "auth-public"
                                 )
                                 .requestRateLimiter(config -> config
@@ -42,7 +42,7 @@ public class GatewayRoutesConfig {
                         .path("/auth/logout")
                         .filters(f -> f
                                 .addResponseHeader(
-                                "X-Service",
+                                "Auth-Service",
                                 "auth-protected"
                                 )
                                 .requestRateLimiter(config -> config
@@ -58,7 +58,7 @@ public class GatewayRoutesConfig {
                         .path("/users/**")
                         .filters(f -> f
                                 .addResponseHeader(
-                                "X-Service",
+                                "Auth-Service",
                                 "user-management"
                                 )
                                 .requestRateLimiter(config -> config
@@ -67,6 +67,22 @@ public class GatewayRoutesConfig {
                                 )
                         )
                         .uri("lb://auth-service")
+                )
+                // todo: 4. Защищенный маршрут для Account-Service
+                //  взаимодействия со счетами в системе
+                .route("account-management", r -> r
+                        .path("/account/**")
+                        .filters(f -> f
+                                .addResponseHeader(
+                                        "Account-Service",
+                                        "account-management"
+                                )
+                                .requestRateLimiter(config -> config
+                                        .setRateLimiter(redisRateLimiter())
+                                        .setKeyResolver(userKeyResolver())
+                                )
+                        )
+                        .uri("lb://account-service")
                 )
                 .build();
     }
