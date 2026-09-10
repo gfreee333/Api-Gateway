@@ -16,7 +16,6 @@ public class GatewayRoutesConfig {
     @Bean
     public RouteLocator customRouteLocators(RouteLocatorBuilder builder){
         return builder.routes()
-                // todo: 1. Публичные endpoints для AuthService
                 .route("auth-service-public", r -> r
                         .path("/auth/login", "/auth/refresh/tokens")
                         .filters(f -> f.
@@ -37,7 +36,6 @@ public class GatewayRoutesConfig {
                         )
                         .uri("lb://auth-service")
                 )
-                // todo: 2. Защищенный маршрут для logout в Auth-Service
                 .route("auth-service-protected", r -> r
                         .path("/auth/logout")
                         .filters(f -> f
@@ -52,8 +50,6 @@ public class GatewayRoutesConfig {
                         )
                         .uri("lb://auth-service")
                 )
-                // todo: 3. Защищенный маршрут для Auth-Service
-                //  по взаимодействию с пользователем системы
                 .route("user-management", r -> r
                         .path("/users/**")
                         .filters(f -> f
@@ -68,8 +64,6 @@ public class GatewayRoutesConfig {
                         )
                         .uri("lb://auth-service")
                 )
-                // todo: 4. Защищенный маршрут для Account-Service
-                //  взаимодействия со счетами в системе
                 .route("account-management", r -> r
                         .path("/account/**")
                         .filters(f -> f
@@ -83,6 +77,34 @@ public class GatewayRoutesConfig {
                                 )
                         )
                         .uri("lb://account-service")
+                )
+                .route("transaction-management", r -> r
+                        .path("/transaction/**")
+                        .filters(f -> f
+                                .addResponseHeader(
+                                "Transaction-Service",
+                                "transaction-management"
+                                )
+                                .requestRateLimiter(config -> config
+                                .setRateLimiter(redisRateLimiter())
+                                .setKeyResolver(userKeyResolver())
+                                )
+                        )
+                        .uri("lb://transaction-service")
+                )
+                .route("deposit-management", r -> r
+                        .path("/deposit/**")
+                        .filters(f -> f
+                                .addResponseHeader(
+                                        "Deposit-Service",
+                                        "deposit-management"
+                                )
+                                .requestRateLimiter(config -> config
+                                        .setRateLimiter(redisRateLimiter())
+                                        .setKeyResolver(userKeyResolver())
+                                )
+                        )
+                        .uri("lb://deposit-service")
                 )
                 .build();
     }
